@@ -16,7 +16,7 @@
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
   LIBRARY_CLASS                  = PciHostBridgeLib|DXE_DRIVER
-  CONSTRUCTOR                    = JH7110PciHostBridgeLibConstructor
+  #CONSTRUCTOR                    = JH7110PciHostBridgeLibConstructor
 
 #
 # The following information is for reference only and not required by the build
@@ -33,6 +33,7 @@
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
   Silicon/StarFive/JH7110/JH7110.dec
+  SseUefiPkg/SseUefiPkg.dec
 
 [LibraryClasses]
   DebugLib
@@ -46,3 +47,9 @@
   gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioAdr
   gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioLen
   gJH7110TokenSpaceGuid.PcdJH7110PciCpuMmioAdr
+
+[Protocols]
+  gEfiDtIoProtocolGuid                    ## CONSUMES
+
+[Depex]
+  gEfiDtIoProtocolGuid

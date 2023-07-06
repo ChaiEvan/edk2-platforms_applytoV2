@@ -575,6 +575,18 @@
   MdeModulePkg/Bus/Pci/PciHostBridgeDxe/PciHostBridgeDxe.inf
   #Silicon/StarFive/JH7110/Library/PciHostBridgeLib/PciHostBridgeLib.inf
   #Silicon/StarFive/JH7110/Library/PciSegmentLib/PciSegmentLib.inf
+
+  #
+  # FdtBus
+  #
+  SseUefiPkg/Drivers/FdtBusDxe/FdtBusDxe.inf
+  SseUefiPkg/Drivers/HighMemDxe/HighMemDxeNoBinding.inf
+
+  #
+  # RamBus Pcie3.0
+  #
+  Silicon/StarFive/JH7110/Driver/RamBusPciExpress/RamBusPciExpress.inf
+
   #
   # NVMe boot devices
   #

@@ -1,0 +1,54 @@
+## @file
+#  RamBus Pcie3.0 Dxe driver Reference EDKII Module.
+#
+#  Copyright (c) 2023, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = RamBusPcieDxe
+  FILE_GUID                      = F2A9E1B7-DE9C-4F9D-8A7B-5C6D0E8F1A2B
+  MODULE_TYPE                    = UEFI_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = RamBusPcieEntry
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 EBC RISCV64
+#
+
+[Sources]
+  RamBusPciExpress.h
+  RamBusPciExpress.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  Silicon/StarFive/JH7110/JH7110.dec
+  SseUefiPkg/SseUefiPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  UefiLib
+  PcdLib
+  DebugLib
+  TimerLib
+
+[Protocols]
+  gEfiDtIoProtocolGuid                    ## CONSUMES
+
+[FixedPcd]
+  gJH7110TokenSpaceGuid.PcdJH7110PciRegBase
+  gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioAdr
+  gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioLen
+  gJH7110TokenSpaceGuid.PcdJH7110PciCpuMmioAdr
+
+[Depex]
+  gEfiDtIoProtocolGuid

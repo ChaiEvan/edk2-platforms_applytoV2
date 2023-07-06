@@ -219,6 +219,17 @@ INF  Silicon/Synopsys/DesignWare/Drivers/DwEmmcDxe/DwSdmmcDxe.inf
 INF  MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
 INF  MdeModulePkg/Bus/Pci/PciHostBridgeDxe/PciHostBridgeDxe.inf
 
+#
+# FdtBus
+#
+INF  SseUefiPkg/Drivers/FdtBusDxe/FdtBusDxe.inf
+INF  SseUefiPkg/Drivers/HighMemDxe/HighMemDxeNoBinding.inf
+
+#
+# RamBus Pcie3.0
+#
+INF  Silicon/StarFive/JH7110/Driver/RamBusPciExpress/RamBusPciExpress.inf
+
 # NVMe boot devices
 INF MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf
 
