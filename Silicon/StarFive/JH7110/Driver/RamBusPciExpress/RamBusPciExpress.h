@@ -15,6 +15,10 @@
 #include <Library/IoLib.h>
 #include <Library/TimerLib.h>
 #include <IndustryStandard/JH7110.h>
+#include <libfdt.h>
+#include <Pi/PiBootMode.h>
+#include <Pi/PiHob.h>
+#include <Library/HobLib.h>
 
 #ifndef _RAMBUS_PCIE_DXE_H_
 #define _RAMBUS_PCIE_DXE_H_

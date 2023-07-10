@@ -34,6 +34,7 @@
   MdeModulePkg/MdeModulePkg.dec
   Silicon/StarFive/JH7110/JH7110.dec
   SseUefiPkg/SseUefiPkg.dec
+  Platform/StarFive/JH7110SeriesPkg/JH7110Board/JH7110.dec
 
 [LibraryClasses]
   DebugLib
@@ -42,11 +43,19 @@
   PcdLib
   UefiBootServicesTableLib
 
-[FixedPcd]
+[Pcd]
   gJH7110TokenSpaceGuid.PcdJH7110PciRegBase
   gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioAdr
   gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioLen
   gJH7110TokenSpaceGuid.PcdJH7110PciCpuMmioAdr
+
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdSegmentNumber
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdSupportedAttributes
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdInitialAttributes
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdDmaAbove4G
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdNoExtendedConfigSpace
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdResourceAssigned
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdAllocationAttributes
 
 [Protocols]
   gEfiDtIoProtocolGuid                    ## CONSUMES

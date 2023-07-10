@@ -31,6 +31,7 @@
   MdeModulePkg/MdeModulePkg.dec
   Silicon/StarFive/JH7110/JH7110.dec
   SseUefiPkg/SseUefiPkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
 
 [LibraryClasses]
   BaseLib
@@ -40,9 +41,14 @@
   PcdLib
   DebugLib
   TimerLib
+  FdtLib
+  HobLib
 
 [Protocols]
   gEfiDtIoProtocolGuid                    ## CONSUMES
+
+[Guids]
+  gFdtHobGuid
 
 [FixedPcd]
   gJH7110TokenSpaceGuid.PcdJH7110PciRegBase

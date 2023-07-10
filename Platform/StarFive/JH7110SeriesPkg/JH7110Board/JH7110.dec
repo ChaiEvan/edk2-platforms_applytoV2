@@ -19,7 +19,17 @@
 [LibraryClasses]
 
 [Guids]
-  gUefiRiscVPlatformU540PkgTokenSpaceGuid  = {0xDFD87009, 0x27A1, 0x41DD, { 0x84, 0xB1, 0x35, 0xB4, 0xB9, 0x0D, 0x17, 0x63 }}
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid  = {0xa72b5709, 0x9fb8, 0x4efd, {0x97, 0xd1, 0xdd, 0x81, 0xba, 0x3d, 0xa4, 0x2d}}
+
+[PcdsFixedAtBuild, PcdsPatchableInModule]
+  ## Host Bridge Table
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdSegmentNumber|0x0|UINT32|0x00000100
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdSupportedAttributes|0x0|UINT64|0x00000101
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdInitialAttributes|0x0|UINT64|0x00000102
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdDmaAbove4G|FALSE|BOOLEAN|0x00000103
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdNoExtendedConfigSpace|FALSE|BOOLEAN|0x00000104
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdResourceAssigned|FALSE|BOOLEAN|0x00000105
+  gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdAllocationAttributes|0|UINT64|0x00000106
 
 [UserExtensions.TianoCore."ExtraFiles"]
   JH7110PkgExtra.uni

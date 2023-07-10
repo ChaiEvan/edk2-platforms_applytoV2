@@ -130,23 +130,6 @@ UINTN                mHBCount = 0;
 | EFI_DT_PCI_HOST_RANGE_MMIO32 | EFI_DT_PCI_HOST_RANGE_IO)
 #endif
 
-#if 0
-// moved it to DtIo.h
-#pragma pack(1)
-typedef struct {
-  EFI_DT_CELL   Type;
-  UINT64        ChildBase;
-  UINT64        ParentBase;
-  UINT64        Size;
-} EFI_DT_RANGE2;
-
-typedef struct {
-  EFI_DT_CELL    BusMin;
-  EFI_DT_CELL    BusMax;
-} EFI_DT_BUS_RANGE;
-#pragma pack()
-#endif
-
 ACPI_HID_DEVICE_PATH mRootBridgeDeviceNodeTemplate = {
   {
     ACPI_DEVICE_PATH,
@@ -176,43 +159,6 @@ PCI_ROOT_BRIDGE mRootBridgeTemplate = {
   { 0, 0 },                             // PMemAbove4G
   NULL                                  // DevicePath;
 };
-
-// DEBUG: debug functions
-VOID
-InternalDumpDataDebug (
-  IN UINT8  *Data,
-  IN UINTN  Size
-  )
-{
-  UINTN  Index;
-  for (Index = 0; Index < Size; Index++) {
-    DEBUG ((DEBUG_INFO, "%02x ", (UINTN)Data[Index]));
-  }
-}
-
-VOID
-InternalDumpHexDebug (
-  IN UINT8  *Data,
-  IN UINTN  Size
-  )
-{
-  UINTN   Index;
-  UINTN   Count;
-  UINTN   Left;
-#define COLUME_SIZE  (16)
-  Count = Size / COLUME_SIZE;
-  Left  = Size % COLUME_SIZE;
-  for (Index = 0; Index < Count; Index++) {
-    InternalDumpDataDebug (Data + Index * COLUME_SIZE, COLUME_SIZE);
-    DEBUG ((DEBUG_INFO, "\n"));
-  }
-  if (Left != 0) {
-    InternalDumpDataDebug (Data + Index * COLUME_SIZE, Left);
-    DEBUG ((DEBUG_INFO, "\n"));
-  }
-  DEBUG ((DEBUG_INFO, "\n"));
-}
-// DEBUG: debug functions end
 
 /**
   Looks up a range property value by name for a EFI_DT_IO_PROTOCOL instance.
@@ -244,12 +190,6 @@ DtIoGetRange (
   EFI_STATUS       Status;
   EFI_DT_PROPERTY  Property;
   UINTN            Dtvaltype;
-  #if 0
-  DT_DEVICE        *DtDevice;
-  UINT8            Address_Cells;
-  UINT8            Size_Cells;
-  VOID             *TreeBase;
-  #endif
 
   Dtvaltype = 0;
   *Len      = 0;
@@ -464,7 +404,6 @@ ProcessPciHost (
         // found the node or nodes
         //
         Status = DtIoGetRange (DtIo, "ranges", 0, (VOID **)&Range, &Len);
-        //Status = DtIoGetRange (DtIo, "dma-ranges", 0, Range);
         if (EFI_ERROR (Status)) {
           DEBUG ((
             DEBUG_ERROR,
@@ -472,38 +411,26 @@ ProcessPciHost (
             __func__
             ));
         }
-        DEBUG ((DEBUG_ERROR, " : xxxxxxxxxxxxxxxx -- Len = [%x]. \n", Len));
-        InternalDumpHexDebug((UINT8 *)Range, Len);
 
         //for (Index2 = 0; Index2 < Len / sizeof (EFI_DT_RANGE2); Index2++) {
         for (Index2 = 0; Index2 < 2; Index2++) {
-          DEBUG ((DEBUG_ERROR, " : <00001.22> ->Type=[%x]. \n", Range[Index2].Type));
           switch (Range[Index2].Type & EFI_DT_PCI_HOST_RANGE_TYPEMASK) {
             case EFI_DT_PCI_HOST_RANGE_IO:
-              DEBUG ((DEBUG_ERROR, " <1>Got EFI_DT_PCI_HOST_RANGE_IO, Index2[%d] \n", Index2));
               *IoBase       = Range[Index2].ChildBase;
               *IoSize       = Range[Index2].Size;
               IoTranslation = Range[Index2].ParentBase - *IoBase;
-              DEBUG ((DEBUG_ERROR, " : <00001.1> IoBase=[%x], IoSize=[%x], ParentBase = [%x], IoTranslation=[%x]. \n", *IoBase, *IoSize, Range[Index2].ParentBase, IoTranslation));
-
-              //ASSERT (PcdGet64 (PcdPciIoTranslation) == IoTranslation);
               break;
 
             case EFI_DT_PCI_HOST_RANGE_MMIO32:
-               DEBUG ((DEBUG_ERROR, " <2>Got EFI_DT_PCI_HOST_RANGE_MMIO32, Index2[%d] \n", Index2));
               *Mmio32Base       = Range[Index2].ChildBase;
               *Mmio32Size       = Range[Index2].Size;
               Mmio32Translation = Range[Index2].ParentBase - *Mmio32Base;
-              DEBUG ((DEBUG_ERROR, " : <00002.1> Mmio32Base=[%x], Mmio32Size=[%x], ParentBase = [%x], Mmio32Translation=[%x]. \n", *Mmio32Base, *Mmio32Size, Range[Index2].ParentBase, Mmio32Translation));
 
               if ((*Mmio32Base > MAX_UINT32) || (*Mmio32Size > MAX_UINT32) ||
                   (*Mmio32Base + *Mmio32Size > SIZE_4GB)) {
                 DEBUG ((DEBUG_ERROR, "%a: MMIO32 space invalid\n", __FUNCTION__));
-                Status = EFI_PROTOCOL_ERROR;
                 break;
               }
-
-              //ASSERT (PcdGet64 (PcdPciMmio32Translation) == Mmio32Translation);
 
               if (Mmio32Translation != 0) {
                 DEBUG ((
@@ -513,18 +440,13 @@ ProcessPciHost (
                   __FUNCTION__,
                   Mmio32Translation
                   ));
-                Status = EFI_UNSUPPORTED;
               }
               break;
 
             case EFI_DT_PCI_HOST_RANGE_MMIO64:
-              DEBUG ((DEBUG_ERROR, " Got <3>EFI_DT_PCI_HOST_RANGE_MMIO64, Index2[%d] \n", Index2));
               *Mmio64Base       = Range[Index2].ChildBase;
               *Mmio64Size       = Range[Index2].Size;
               Mmio64Translation = Range[Index2].ParentBase - *Mmio64Base;
-              DEBUG ((DEBUG_ERROR, " : <00003.1> Mmio64Base=[%lx], Mmio64Size=[%lx], ParentBase = [%lx], IoTranslation=[%lx]. \n", *Mmio64Base, *Mmio64Size, Range[Index2].ParentBase, Mmio64Translation));
-
-              //ASSERT (PcdGet64 (PcdPciMmio64Translation) == Mmio64Translation);
 
               if (Mmio64Translation != 0) {
                 DEBUG ((
@@ -534,7 +456,6 @@ ProcessPciHost (
                   __FUNCTION__,
                   Mmio64Translation
                   ));
-                Status = EFI_UNSUPPORTED;
               }
               break;
 
@@ -571,7 +492,7 @@ ProcessPciHost (
         //
         ConfigBase = Reg.Base;
         ConfigSize = Reg.Length;
-        DEBUG ((DEBUG_ERROR, "%a: GetReg:: ConfigBase=[%x], ConfigSize=[%x]. \n", __func__, ConfigBase, ConfigSize));
+        DEBUG ((DEBUG_ERROR, "%a: GetReg:: ConfigBase=[%lx], ConfigSize=[%lx]. \n", __func__, ConfigBase, ConfigSize));
 
         //
         // The dynamic PCD PcdPciExpressBaseAddress should have already been set,
@@ -593,7 +514,6 @@ ProcessPciHost (
 
         *BusMin = SwapBytes32(BusRange.BusMin);
         *BusMax = SwapBytes32(BusRange.BusMax);
-        DEBUG ((DEBUG_ERROR, "%a: GetProp:: BusMin=[%x], BusMax=[%x]. \n", __func__, *BusMin, *BusMax));
 
         DEBUG ((
           DEBUG_INFO,
@@ -618,9 +538,6 @@ ProcessPciHost (
         //
         Status = MapGcdMmioSpace (ConfigBase, ConfigSize);
         ASSERT_EFI_ERROR (Status);
-        if (EFI_ERROR (Status)) {
-          return Status;
-        }
 
         if (*IoSize != 0) {
           //
@@ -670,7 +587,6 @@ PciHostBridgeGetRootBridges (
   UINT64                    Mmio64Size;
   UINT32                    BusMin;
   UINT32                    BusMax;
-  UINT64                    Attributes;
   UINT64                    AllocationAttributes;
   PCI_ROOT_BRIDGE_APERTURE  Io;
   PCI_ROOT_BRIDGE_APERTURE  Mem;
@@ -712,11 +628,6 @@ PciHostBridgeGetRootBridges (
   ZeroMem (&MemAbove4G, sizeof (MemAbove4G));
   ZeroMem (&PMem, sizeof (PMem));
   ZeroMem (&PMemAbove4G, sizeof (PMemAbove4G));
-
-  Attributes = EFI_PCI_ATTRIBUTE_ISA_IO_16 |
-               EFI_PCI_ATTRIBUTE_ISA_MOTHERBOARD_IO |
-               EFI_PCI_ATTRIBUTE_VGA_IO_16  |
-               EFI_PCI_ATTRIBUTE_VGA_PALETTE_IO_16;
 
   AllocationAttributes = EFI_PCI_HOST_BRIDGE_COMBINE_MEM_PMEM;
 
@@ -760,14 +671,14 @@ PciHostBridgeGetRootBridges (
     return NULL;
   }
 
-  mRootBridgeTemplate.Attributes            = Attributes;
-  mRootBridgeTemplate.Supports              = Attributes;
-  mRootBridgeTemplate.DmaAbove4G            = TRUE;
-  mRootBridgeTemplate.AllocationAttributes  = AllocationAttributes;
+  mRootBridgeTemplate.Supports              = PcdGet64 (PcdSupportedAttributes);
+  mRootBridgeTemplate.Attributes            = PcdGet64 (PcdInitialAttributes);
+  mRootBridgeTemplate.DmaAbove4G            = PcdGetBool (PcdDmaAbove4G);
+  mRootBridgeTemplate.AllocationAttributes  = PcdGet64 (PcdAllocationAttributes);
   mRootBridgeTemplate.Bus.Base              = BusMin;
   mRootBridgeTemplate.Bus.Limit             = BusMax;
-  mRootBridgeTemplate.NoExtendedConfigSpace = FALSE;
-  mRootBridgeTemplate.ResourceAssigned      = FALSE;
+  mRootBridgeTemplate.NoExtendedConfigSpace = PcdGetBool (PcdNoExtendedConfigSpace);
+  mRootBridgeTemplate.ResourceAssigned      = PcdGetBool (PcdResourceAssigned);
 
   CopyMem (&mRootBridgeTemplate.Io, &Io, sizeof (Io));
   CopyMem (&mRootBridgeTemplate.Mem, &Mem, sizeof (Mem));
@@ -778,9 +689,8 @@ PciHostBridgeGetRootBridges (
   for (Index = 0; Index < mHBCount; Index ++) {
     mRootBridgeDeviceNodeTemplate.UID = Index;
     mRootBridgeTemplate.Segment = Index;
-    mRootBridgeTemplate.DevicePath = AppendDevicePathNode (NULL, &mRootBridgeDeviceNodeTemplate.Header);
+    mRootBridgeTemplate.DevicePath = AppendDevicePathNode (NULL, &mEfiPciRootBridgeDevicePath[Index].AcpiDevicePath.Header);
 
-    DEBUG ((DEBUG_ERROR, "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc. \n"));
     CopyMem (Bridges + Index, &mRootBridgeTemplate, sizeof (PCI_ROOT_BRIDGE));
   }
 

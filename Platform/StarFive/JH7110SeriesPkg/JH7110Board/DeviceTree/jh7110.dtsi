@@ -226,7 +226,7 @@
 		};
 
 		stg_syscon: stg_syscon@10240000 {
-			compatible = "syscon";
+			compatible = "syscon","stg_syscon";
 			reg = <0x0 0x10240000 0x0 0x1000>;
 		};
 
