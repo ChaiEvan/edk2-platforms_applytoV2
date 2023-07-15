@@ -350,7 +350,7 @@ ProcessPciHost (
   UINT64               IoTranslation;
   UINT64               Mmio32Translation;
   UINT64               Mmio64Translation;
-  EFI_DT_RANGE2        *Range;
+  EFI_DT_RANGE         *Range;
   UINTN                Index2;
   EFI_DT_BUS_RANGE     BusRange;
   EFI_DT_REG           Reg;
