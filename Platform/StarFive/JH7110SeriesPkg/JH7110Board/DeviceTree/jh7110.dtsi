@@ -1485,7 +1485,7 @@
 		};
 
 		pcie0: pcie@2B000000 {
-			compatible = "starfive,jh7110-pcie0","plda,pci-xpressrich3-axi";
+			compatible = "starfive,jh7110-pcie","plda,pci-xpressrich3-axi";
 			#address-cells = <3>;
 			#size-cells = <2>;
 			#interrupt-cells = <1>;
@@ -1525,7 +1525,7 @@
 		};
 
 		pcie1: pcie@2C000000 {
-			compatible = "starfive,jh7110-pcie1","plda,pci-xpressrich3-axi";
+			compatible = "starfive,jh7110-pcie","plda,pci-xpressrich3-axi";
 			#address-cells = <3>;
 			#size-cells = <2>;
 			#interrupt-cells = <1>;

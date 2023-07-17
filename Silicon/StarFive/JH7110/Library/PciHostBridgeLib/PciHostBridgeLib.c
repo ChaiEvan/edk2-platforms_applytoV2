@@ -32,7 +32,7 @@ typedef PACKED struct {
 
 #pragma pack ()
 
-STATIC CONST EFI_PCI_ROOT_BRIDGE_DEVICE_PATH mEfiPciRootBridgeDevicePath[] = {
+EFI_PCI_ROOT_BRIDGE_DEVICE_PATH mEfiPciRootBridgeDevicePath[] = {
   {
     {
       {
@@ -45,6 +45,29 @@ STATIC CONST EFI_PCI_ROOT_BRIDGE_DEVICE_PATH mEfiPciRootBridgeDevicePath[] = {
       },
       EISA_PNP_ID (0x0A08), // PCI Express
       0
+    },
+
+    {
+      END_DEVICE_PATH_TYPE,
+      END_ENTIRE_DEVICE_PATH_SUBTYPE,
+      {
+        END_DEVICE_PATH_LENGTH,
+        0
+      }
+    }
+  },
+  {
+    {
+      {
+        ACPI_DEVICE_PATH,
+        ACPI_DP,
+        {
+          (UINT8)(sizeof (ACPI_HID_DEVICE_PATH)),
+          (UINT8)(sizeof (ACPI_HID_DEVICE_PATH) >> 8)
+        }
+      },
+      EISA_PNP_ID (0x0A08), // PCI Express
+      1
     },
 
     {
@@ -143,21 +166,39 @@ ACPI_HID_DEVICE_PATH mRootBridgeDeviceNodeTemplate = {
   0
 };
 
-PCI_ROOT_BRIDGE mRootBridgeTemplate = {
-  0,
-  0,                                    // Supports;
-  0,                                    // Attributes;
-  FALSE,                                // DmaAbove4G;
-  FALSE,                                // NoExtendedConfigSpace;
-  FALSE,                                // ResourceAssigned;
-  EFI_PCI_HOST_BRIDGE_COMBINE_MEM_PMEM, // AllocationAttributes
-  { 0, 255 },                           // Bus
-  { 0, 0 },                             // Io - to be fixed later
-  { 0, 0 },                             // Mem - to be fixed later
-  { 0, 0 },                             // MemAbove4G - to be fixed later
-  { 0, 0 },                             // PMem - COMBINE_MEM_PMEM indicating no PMem and PMemAbove4GB
-  { 0, 0 },                             // PMemAbove4G
-  NULL                                  // DevicePath;
+PCI_ROOT_BRIDGE mRootBridgeTemplate[] = {
+  {
+    0,
+    0,                                    // Supports;
+    0,                                    // Attributes;
+    FALSE,                                // DmaAbove4G;
+    FALSE,                                // NoExtendedConfigSpace;
+    FALSE,                                // ResourceAssigned;
+    EFI_PCI_HOST_BRIDGE_COMBINE_MEM_PMEM, // AllocationAttributes
+    { 0, 255 },                           // Bus
+    { 0, 0 },                             // Io - to be fixed later
+    { 0, 0 },                             // Mem - to be fixed later
+    { 0, 0 },                             // MemAbove4G - to be fixed later
+    { 0, 0 },                             // PMem - COMBINE_MEM_PMEM indicating no PMem and PMemAbove4GB
+    { 0, 0 },                             // PMemAbove4G
+    NULL                                  // DevicePath;
+  },
+  {
+    0,
+    0,                                    // Supports;
+    0,                                    // Attributes;
+    FALSE,                                // DmaAbove4G;
+    FALSE,                                // NoExtendedConfigSpace;
+    FALSE,                                // ResourceAssigned;
+    EFI_PCI_HOST_BRIDGE_COMBINE_MEM_PMEM, // AllocationAttributes
+    { 0, 255 },                           // Bus
+    { 0, 0 },                             // Io - to be fixed later
+    { 0, 0 },                             // Mem - to be fixed later
+    { 0, 0 },                             // MemAbove4G - to be fixed later
+    { 0, 0 },                             // PMem - COMBINE_MEM_PMEM indicating no PMem and PMemAbove4GB
+    { 0, 0 },                             // PMemAbove4G
+    NULL                                  // DevicePath;
+  }
 };
 
 /**
@@ -287,8 +328,8 @@ DtIoGetBusRange (
   return EFI_SUCCESS;
 }
 
-STATIC
 EFI_STATUS
+EFIAPI
 MapGcdMmioSpace (
   IN    UINT64  Base,
   IN    UINT64  Size
@@ -327,33 +368,40 @@ MapGcdMmioSpace (
   return Status;
 }
 
-STATIC
 EFI_STATUS
+EFIAPI
 ProcessPciHost (
-  OUT  UINT64  *IoBase,
-  OUT  UINT64  *IoSize,
-  OUT  UINT64  *Mmio32Base,
-  OUT  UINT64  *Mmio32Size,
-  OUT  UINT64  *Mmio64Base,
-  OUT  UINT64  *Mmio64Size,
-  OUT  UINT32  *BusMin,
-  OUT  UINT32  *BusMax
+  VOID
   )
 {
-  UINT64               ConfigBase, ConfigSize;
-  UINTN                Len;
-  UINTN                Index;
-  EFI_STATUS           Status;
-  EFI_DT_IO_PROTOCOL   *DtIo;
-  UINTN                HandleCount;
-  EFI_HANDLE           *HandleBuffer;
-  UINT64               IoTranslation;
-  UINT64               Mmio32Translation;
-  UINT64               Mmio64Translation;
-  EFI_DT_RANGE         *Range;
-  UINTN                Index2;
-  EFI_DT_BUS_RANGE     BusRange;
-  EFI_DT_REG           Reg;
+  UINT64                    ConfigBase;
+  UINT64                    ConfigSize;
+  UINTN                     Len;
+  UINTN                     Index;
+  EFI_STATUS                Status;
+  EFI_DT_IO_PROTOCOL        *DtIo;
+  UINTN                     HandleCount;
+  EFI_HANDLE                *HandleBuffer;
+  UINT64                    IoBase;
+  UINT64                    IoSize;
+  UINT64                    Mmio32Base;
+  UINT64                    Mmio32Size;
+  UINT64                    Mmio64Base;
+  UINT64                    Mmio64Size;
+  UINT32                    BusMin;
+  UINT32                    BusMax;
+  PCI_ROOT_BRIDGE_APERTURE  Io;
+  PCI_ROOT_BRIDGE_APERTURE  Mem;
+  PCI_ROOT_BRIDGE_APERTURE  MemAbove4G;
+  PCI_ROOT_BRIDGE_APERTURE  PMem;
+  PCI_ROOT_BRIDGE_APERTURE  PMemAbove4G;
+  UINT64                    IoTranslation;
+  UINT64                    Mmio32Translation;
+  UINT64                    Mmio64Translation;
+  EFI_DT_RANGE              *Range;
+  UINTN                     Index2;
+  EFI_DT_BUS_RANGE          BusRange;
+  EFI_DT_REG                Reg;
 
   Range   = NULL;
   Len     = 0;
@@ -363,20 +411,20 @@ ProcessPciHost (
   // order to suppress '-Werror=maybe-uninitialized' warnings
   // *incorrectly* emitted by some gcc versions.
   //
-  *IoBase     = 0;
-  *Mmio32Base = 0;
-  *Mmio64Base = MAX_UINT64;
-  *BusMin     = 0;
-  *BusMax     = 0;
+  IoBase     = 0;
+  Mmio32Base = 0;
+  Mmio64Base = MAX_UINT64;
+  BusMin     = 0;
+  BusMax     = 0;
 
   //
   // *IoSize, *Mmio##Size and IoTranslation are initialized to zero because the
   // logic below requires it. However, since they are also affected by the issue
   // reported above, they are initialized early.
   //
-  *IoSize       = 0;
-  *Mmio32Size   = 0;
-  *Mmio64Size   = 0;
+  IoSize       = 0;
+  Mmio32Size   = 0;
+  Mmio64Size   = 0;
   IoTranslation = 0;
 
   Status = gBS->LocateHandleBuffer (
@@ -399,7 +447,7 @@ ProcessPciHost (
         ));
       continue;
     } else {
-        if (!(DtIo->IsCompatible (DtIo, "starfive,jh7110-pcie1"))) {
+        if (!(DtIo->IsCompatible (DtIo, "starfive,jh7110-pcie"))) {
         //
         // found the node or nodes
         //
@@ -416,18 +464,18 @@ ProcessPciHost (
         for (Index2 = 0; Index2 < 2; Index2++) {
           switch (Range[Index2].Type & EFI_DT_PCI_HOST_RANGE_TYPEMASK) {
             case EFI_DT_PCI_HOST_RANGE_IO:
-              *IoBase       = Range[Index2].ChildBase;
-              *IoSize       = Range[Index2].Size;
-              IoTranslation = Range[Index2].ParentBase - *IoBase;
+              IoBase       = Range[Index2].ChildBase;
+              IoSize       = Range[Index2].Size;
+              IoTranslation = Range[Index2].ParentBase - IoBase;
               break;
 
             case EFI_DT_PCI_HOST_RANGE_MMIO32:
-              *Mmio32Base       = Range[Index2].ChildBase;
-              *Mmio32Size       = Range[Index2].Size;
-              Mmio32Translation = Range[Index2].ParentBase - *Mmio32Base;
+              Mmio32Base       = Range[Index2].ChildBase;
+              Mmio32Size       = Range[Index2].Size;
+              Mmio32Translation = Range[Index2].ParentBase - Mmio32Base;
 
-              if ((*Mmio32Base > MAX_UINT32) || (*Mmio32Size > MAX_UINT32) ||
-                  (*Mmio32Base + *Mmio32Size > SIZE_4GB)) {
+              if ((Mmio32Base > MAX_UINT32) || (Mmio32Size > MAX_UINT32) ||
+                  (Mmio32Base + Mmio32Size > SIZE_4GB)) {
                 DEBUG ((DEBUG_ERROR, "%a: MMIO32 space invalid\n", __FUNCTION__));
                 break;
               }
@@ -444,9 +492,9 @@ ProcessPciHost (
               break;
 
             case EFI_DT_PCI_HOST_RANGE_MMIO64:
-              *Mmio64Base       = Range[Index2].ChildBase;
-              *Mmio64Size       = Range[Index2].Size;
-              Mmio64Translation = Range[Index2].ParentBase - *Mmio64Base;
+              Mmio64Base       = Range[Index2].ChildBase;
+              Mmio64Size       = Range[Index2].Size;
+              Mmio64Translation = Range[Index2].ParentBase - Mmio64Base;
 
               if (Mmio64Translation != 0) {
                 DEBUG ((
@@ -470,7 +518,7 @@ ProcessPciHost (
 
         } // then end of for-loop
 
-        if (*Mmio32Size == 0) {
+        if (Mmio32Size == 0) {
           DEBUG ((DEBUG_ERROR, "%a: MMIO32 space empty\n", __FUNCTION__));
           continue;
         }
@@ -512,8 +560,8 @@ ProcessPciHost (
             ));
         }
 
-        *BusMin = SwapBytes32(BusRange.BusMin);
-        *BusMax = SwapBytes32(BusRange.BusMax);
+        BusMin = SwapBytes32(BusRange.BusMin);
+        BusMax = SwapBytes32(BusRange.BusMax);
 
         DEBUG ((
           DEBUG_INFO,
@@ -522,15 +570,15 @@ ProcessPciHost (
           __FUNCTION__,
           ConfigBase,
           ConfigSize,
-          *BusMin,
-          *BusMax,
-          *IoBase,
-          *IoSize,
+          BusMin,
+          BusMax,
+          IoBase,
+          IoSize,
           IoTranslation,
-          *Mmio32Base,
-          *Mmio32Size,
-          *Mmio64Base,
-          *Mmio64Size
+          Mmio32Base,
+          Mmio32Size,
+          Mmio64Base,
+          Mmio64Size
           ));
 
         //
@@ -539,15 +587,70 @@ ProcessPciHost (
         Status = MapGcdMmioSpace (ConfigBase, ConfigSize);
         ASSERT_EFI_ERROR (Status);
 
-        if (*IoSize != 0) {
+        if (IoSize != 0) {
           //
           // Map the MMIO window that provides I/O access - the PCI host bridge code
           // is not aware of this translation and so it will only map the I/O view
           // in the GCD I/O map.
           //
-          Status = MapGcdMmioSpace (*IoBase + IoTranslation, *IoSize);
+          Status = MapGcdMmioSpace (IoBase + IoTranslation, IoSize);
           ASSERT_EFI_ERROR (Status);
         }
+
+        ZeroMem (&Io, sizeof (Io));
+        ZeroMem (&Mem, sizeof (Mem));
+        ZeroMem (&MemAbove4G, sizeof (MemAbove4G));
+        ZeroMem (&PMem, sizeof (PMem));
+        ZeroMem (&PMemAbove4G, sizeof (PMemAbove4G));
+
+        if (IoSize != 0) {
+          Io.Base  = IoBase;
+          Io.Limit = IoBase + IoSize - 1;
+        } else {
+          Io.Base  = MAX_UINT64;
+          Io.Limit = 0;
+        }
+
+        Mem.Base  = Mmio32Base;
+        Mem.Limit = Mmio32Base + Mmio32Size - 1;
+
+        if (Mmio64Size != 0) {
+          MemAbove4G.Base       = Mmio64Base;
+          MemAbove4G.Limit      = Mmio64Base + Mmio64Size - 1;
+          //AllocationAttributes |= EFI_PCI_HOST_BRIDGE_MEM64_DECODE;
+        } else {
+          //
+          // UEFI mandates a 1:1 virtual-to-physical mapping, so on a 32-bit
+          // architecture such as ARM, we will not be able to access 64-bit MMIO
+          // BARs unless they are allocated below 4 GB. So ignore the range above
+          // 4 GB in this case.
+          //
+          MemAbove4G.Base  = MAX_UINT64;
+          MemAbove4G.Limit = 0;
+        }
+
+        //
+        // No separate ranges for prefetchable and non-prefetchable BARs
+        //
+        PMem.Base         = MAX_UINT64;
+        PMem.Limit        = 0;
+        PMemAbove4G.Base  = MAX_UINT64;
+        PMemAbove4G.Limit = 0;
+
+        mRootBridgeTemplate[mHBCount].Supports              = PcdGet64 (PcdSupportedAttributes);
+        mRootBridgeTemplate[mHBCount].Attributes            = PcdGet64 (PcdInitialAttributes);
+        mRootBridgeTemplate[mHBCount].DmaAbove4G            = PcdGetBool (PcdDmaAbove4G);
+        mRootBridgeTemplate[mHBCount].AllocationAttributes  = PcdGet64 (PcdAllocationAttributes);
+        mRootBridgeTemplate[mHBCount].Bus.Base              = BusMin;
+        mRootBridgeTemplate[mHBCount].Bus.Limit             = BusMax;
+        mRootBridgeTemplate[mHBCount].NoExtendedConfigSpace = PcdGetBool (PcdNoExtendedConfigSpace);
+        mRootBridgeTemplate[mHBCount].ResourceAssigned      = PcdGetBool (PcdResourceAssigned);
+
+        CopyMem (&mRootBridgeTemplate[mHBCount].Io, &Io, sizeof (Io));
+        CopyMem (&mRootBridgeTemplate[mHBCount].Mem, &Mem, sizeof (Mem));
+        CopyMem (&mRootBridgeTemplate[mHBCount].MemAbove4G, &MemAbove4G, sizeof (MemAbove4G));
+        CopyMem (&mRootBridgeTemplate[mHBCount].PMem, &PMem, sizeof (PMem));
+        CopyMem (&mRootBridgeTemplate[mHBCount].PMemAbove4G, &PMemAbove4G, sizeof (PMemAbove4G));
 
         mHBCount++;
       } //if (!(DtIo->IsCompatible (DtIo, "pci-host-ecam-generic")))
@@ -579,35 +682,12 @@ PciHostBridgeGetRootBridges (
 {
 #ifdef FDT_APIS_HOSTBRIDGE_ENABLE
   EFI_STATUS                Status;
-  UINT64                    IoBase;
-  UINT64                    IoSize;
-  UINT64                    Mmio32Base;
-  UINT64                    Mmio32Size;
-  UINT64                    Mmio64Base;
-  UINT64                    Mmio64Size;
-  UINT32                    BusMin;
-  UINT32                    BusMax;
-  UINT64                    AllocationAttributes;
-  PCI_ROOT_BRIDGE_APERTURE  Io;
-  PCI_ROOT_BRIDGE_APERTURE  Mem;
-  PCI_ROOT_BRIDGE_APERTURE  MemAbove4G;
-  PCI_ROOT_BRIDGE_APERTURE  PMem;
-  PCI_ROOT_BRIDGE_APERTURE  PMemAbove4G;
   PCI_ROOT_BRIDGE           *Bridges;
   UINTN                     Index;
 
   *Count = 0;
 
-  Status = ProcessPciHost (
-             &IoBase,
-             &IoSize,
-             &Mmio32Base,
-             &Mmio32Size,
-             &Mmio64Base,
-             &Mmio64Size,
-             &BusMin,
-             &BusMax
-             );
+  Status = ProcessPciHost ();
   if (EFI_ERROR (Status)) {
     DEBUG ((
       DEBUG_ERROR,
@@ -623,75 +703,18 @@ PciHostBridgeGetRootBridges (
     return NULL;
   }
 
-  ZeroMem (&Io, sizeof (Io));
-  ZeroMem (&Mem, sizeof (Mem));
-  ZeroMem (&MemAbove4G, sizeof (MemAbove4G));
-  ZeroMem (&PMem, sizeof (PMem));
-  ZeroMem (&PMemAbove4G, sizeof (PMemAbove4G));
-
-  AllocationAttributes = EFI_PCI_HOST_BRIDGE_COMBINE_MEM_PMEM;
-
-  if (IoSize != 0) {
-    Io.Base  = IoBase;
-    Io.Limit = IoBase + IoSize - 1;
-  } else {
-    Io.Base  = MAX_UINT64;
-    Io.Limit = 0;
-  }
-
-  Mem.Base  = Mmio32Base;
-  Mem.Limit = Mmio32Base + Mmio32Size - 1;
-
-  if ((sizeof (UINTN) == sizeof (UINT64)) && (Mmio64Size != 0)) {
-    MemAbove4G.Base       = Mmio64Base;
-    MemAbove4G.Limit      = Mmio64Base + Mmio64Size - 1;
-    AllocationAttributes |= EFI_PCI_HOST_BRIDGE_MEM64_DECODE;
-  } else {
-    //
-    // UEFI mandates a 1:1 virtual-to-physical mapping, so on a 32-bit
-    // architecture such as ARM, we will not be able to access 64-bit MMIO
-    // BARs unless they are allocated below 4 GB. So ignore the range above
-    // 4 GB in this case.
-    //
-    MemAbove4G.Base  = MAX_UINT64;
-    MemAbove4G.Limit = 0;
-  }
-
-  //
-  // No separate ranges for prefetchable and non-prefetchable BARs
-  //
-  PMem.Base         = MAX_UINT64;
-  PMem.Limit        = 0;
-  PMemAbove4G.Base  = MAX_UINT64;
-  PMemAbove4G.Limit = 0;
-
   Bridges = AllocatePool (sizeof (PCI_ROOT_BRIDGE) * mHBCount);
   if (Bridges == NULL) {
     DEBUG ((DEBUG_ERROR, "%a: %r\n", __FUNCTION__, EFI_OUT_OF_RESOURCES));
     return NULL;
   }
 
-  mRootBridgeTemplate.Supports              = PcdGet64 (PcdSupportedAttributes);
-  mRootBridgeTemplate.Attributes            = PcdGet64 (PcdInitialAttributes);
-  mRootBridgeTemplate.DmaAbove4G            = PcdGetBool (PcdDmaAbove4G);
-  mRootBridgeTemplate.AllocationAttributes  = PcdGet64 (PcdAllocationAttributes);
-  mRootBridgeTemplate.Bus.Base              = BusMin;
-  mRootBridgeTemplate.Bus.Limit             = BusMax;
-  mRootBridgeTemplate.NoExtendedConfigSpace = PcdGetBool (PcdNoExtendedConfigSpace);
-  mRootBridgeTemplate.ResourceAssigned      = PcdGetBool (PcdResourceAssigned);
-
-  CopyMem (&mRootBridgeTemplate.Io, &Io, sizeof (Io));
-  CopyMem (&mRootBridgeTemplate.Mem, &Mem, sizeof (Mem));
-  CopyMem (&mRootBridgeTemplate.MemAbove4G, &MemAbove4G, sizeof (MemAbove4G));
-  CopyMem (&mRootBridgeTemplate.PMem, &PMem, sizeof (PMem));
-  CopyMem (&mRootBridgeTemplate.PMemAbove4G, &PMemAbove4G, sizeof (PMemAbove4G));
-
   for (Index = 0; Index < mHBCount; Index ++) {
-    mRootBridgeDeviceNodeTemplate.UID = Index;
-    mRootBridgeTemplate.Segment = Index;
-    mRootBridgeTemplate.DevicePath = AppendDevicePathNode (NULL, &mEfiPciRootBridgeDevicePath[Index].AcpiDevicePath.Header);
+    mEfiPciRootBridgeDevicePath[Index].AcpiDevicePath.UID = Index;
+    mRootBridgeTemplate[Index].Segment = Index;
+    mRootBridgeTemplate[Index].DevicePath = AppendDevicePathNode (NULL, &mEfiPciRootBridgeDevicePath[Index].AcpiDevicePath.Header);
 
-    CopyMem (Bridges + Index, &mRootBridgeTemplate, sizeof (PCI_ROOT_BRIDGE));
+    CopyMem (Bridges + Index, &mRootBridgeTemplate[Index], sizeof (PCI_ROOT_BRIDGE));
   }
 
   *Count = mHBCount;
