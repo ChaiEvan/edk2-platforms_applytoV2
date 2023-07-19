@@ -50,7 +50,7 @@
 [Guids]
   gFdtHobGuid
 
-[FixedPcd]
+[Pcd]
   gJH7110TokenSpaceGuid.PcdJH7110PciRegBase
   gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioAdr
   gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioLen

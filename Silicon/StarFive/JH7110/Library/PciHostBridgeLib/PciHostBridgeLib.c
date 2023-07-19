@@ -607,7 +607,7 @@ ProcessPciHost (
           Io.Base  = IoBase;
           Io.Limit = IoBase + IoSize - 1;
         } else {
-          Io.Base  = MAX_UINT64;
+          Io.Base  = 1;  // from MAX_UINT64 to 1
           Io.Limit = 0;
         }
 

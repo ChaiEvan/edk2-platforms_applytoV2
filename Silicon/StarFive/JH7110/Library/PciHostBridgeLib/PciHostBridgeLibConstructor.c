@@ -99,7 +99,7 @@ UINT32 PCIE_GPIO[2] = {26, 28};
 
 static inline UINT64 get_pcie_reg_base(UINT32 Port)
 {
-    return PCIE_REG_BASE + Port * 0x1000000;
+    return (PcdGet64 (PcdJH7110PciRegBase) + Port * 0x1000000);
 }
 
 VOID PcieRegWrite(UINT32 Port, UINTN Offset, UINT32 Value)

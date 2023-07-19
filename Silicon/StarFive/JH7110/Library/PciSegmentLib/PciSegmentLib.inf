@@ -30,5 +30,5 @@
   PcdLib
   UefiLib
 
-[FixedPcd]
+[Pcd]
   gJH7110TokenSpaceGuid.PcdJH7110PciConfigRegBase

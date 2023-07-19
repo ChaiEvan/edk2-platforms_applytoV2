@@ -72,6 +72,7 @@ STATIC
 UINT64
 PciSegmentLibGetConfigBase (
   IN  UINT64                      Address,
+  IN  UINT16                     Segment,
   IN  UINT32			  Write
   )
 {
@@ -80,7 +81,7 @@ PciSegmentLibGetConfigBase (
   UINT32        Dev;
   UINT32        Bus;
 
-  Base = PCIE_CONFIG_BASE;
+  Base = PcdGet64 (PcdJH7110PciConfigRegBase);
   Offset = Address & 0xFFF;         /* Pick off the 4k register offset */
   Address &= 0xFFFF000;            /* Clear the offset leave only the BDF */
 
@@ -98,9 +99,9 @@ PciSegmentLibGetConfigBase (
       if (Dev > 0)
       	return 0xFFFFFFFF;
 
-      return Base + Address + Offset;
+      return Base + Segment * 0x80000000 + Address + Offset;
   }
-  return Base + Offset;
+  return Base + Segment * 0x80000000 + Offset;
 }
 
 /**
@@ -122,9 +123,10 @@ PciSegmentLibReadWorker (
 {
   UINT64    Base;
   UINT32    Ret;
+  UINT16    Segment = (Address >> 32);
 
   EfiAcquireLock (&mPciSegmentReadWriteLock);
-  Base = PciSegmentLibGetConfigBase (Address, 0);
+  Base = PciSegmentLibGetConfigBase (Address, Segment, 0);
 
   if (Base == 0xFFFFFFFF) {
     EfiReleaseLock (&mPciSegmentReadWriteLock);
@@ -170,9 +172,10 @@ PciSegmentLibWriteWorker (
   )
 {
   UINT64    Base;
+  UINT16    Segment = (Address >> 32);
 
   EfiAcquireLock (&mPciSegmentReadWriteLock);
-  Base = PciSegmentLibGetConfigBase (Address, 1);
+  Base = PciSegmentLibGetConfigBase (Address, Segment, 1);
 
   switch (Width) {
   case PciCfgWidthUint8:

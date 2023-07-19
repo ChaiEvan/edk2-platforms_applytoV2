@@ -529,32 +529,34 @@ RamBusPcieEntry (
   Status = gBS->LocateProtocol (&gEfiDtIoProtocolGuid, NULL, (VOID **)&DtIo);
   ASSERT_EFI_ERROR (Status);
 
-  PcieSTGInit(DtIo, PortIndex);
+  for (PortIndex = 0; PortIndex < 2; PortIndex++) {
+    PcieSTGInit(DtIo, PortIndex);
 
-  //RegWrite(mSysClkBase + SYS_CLK_NOC_OFFSET, 1 << 31);
-  Reg.Base   = mSysClkBase;
-  Reg.Length = mSysClkLength;
-  Status = DtIo->WriteReg (DtIo, EfiDtIoWidthUint32, &Reg, SYS_CLK_NOC_OFFSET, 1, &(UINT32){1 << 31});
-  if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR,"Warning: failed to ReadReg. \n"));
+    //RegWrite(mSysClkBase + SYS_CLK_NOC_OFFSET, 1 << 31);
+    Reg.Base   = mSysClkBase;
+    Reg.Length = mSysClkLength;
+    Status = DtIo->WriteReg (DtIo, EfiDtIoWidthUint32, &Reg, SYS_CLK_NOC_OFFSET, 1, &(UINT32){1 << 31});
+    if (EFI_ERROR (Status)) {
+      DEBUG ((DEBUG_ERROR,"Warning: failed to ReadReg. \n"));
     //return Status;
-  }
+    }
 
-  PcieClockInit(DtIo, PortIndex);
-  PcieResetDeassert(DtIo, PortIndex);
-  PcieGpioResetSet(DtIo, PortIndex, 0);
-  PcieFuncSet(DtIo, PortIndex);
+    PcieClockInit(DtIo, PortIndex);
+    PcieResetDeassert(DtIo, PortIndex);
+    PcieGpioResetSet(DtIo, PortIndex, 0);
+    PcieFuncSet(DtIo, PortIndex);
   
-  PcieAtrInit(DtIo, PortIndex, PCIE_CFG_BASE[PortIndex],
-     0, XR3_PCI_ECAM_SIZE, 1);
-  PcieAtrInit(DtIo, PortIndex, PCI_MEMREGION_32[PortIndex],
-     PCI_MEMREGION_32[PortIndex], PCI_MEMREGION_SIZE[0], 0);
-  PcieAtrInit(DtIo, PortIndex, PCI_MEMREGION_64[PortIndex],
-     PCI_MEMREGION_64[PortIndex], PCI_MEMREGION_SIZE[1], 0);
-  PcieGpioResetSet(DtIo, PortIndex, 1);
-  MicroSecondDelay(300);
+    PcieAtrInit(DtIo, PortIndex, PCIE_CFG_BASE[PortIndex],
+      0, XR3_PCI_ECAM_SIZE, 1);
+    PcieAtrInit(DtIo, PortIndex, PCI_MEMREGION_32[PortIndex],
+      PCI_MEMREGION_32[PortIndex], PCI_MEMREGION_SIZE[0], 0);
+    PcieAtrInit(DtIo, PortIndex, PCI_MEMREGION_64[PortIndex],
+      PCI_MEMREGION_64[PortIndex], PCI_MEMREGION_SIZE[1], 0);
+    PcieGpioResetSet(DtIo, PortIndex, 1);
+    MicroSecondDelay(300);
 
-  DEBUG ((DEBUG_ERROR, "PCIe port %d init\n", PortIndex));
+    DEBUG ((DEBUG_ERROR, "PCIe port %d init\n", PortIndex));
+  }
 
   return EFI_SUCCESS;
 }

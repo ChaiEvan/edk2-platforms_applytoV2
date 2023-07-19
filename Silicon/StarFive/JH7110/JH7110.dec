@@ -19,14 +19,6 @@
   gJH7110TokenSpaceGuid = {0x44045e56, 0x7056, 0x4be6, {0x88, 0xc0, 0x49, 0x0c, 0x67, 0x90, 0x2f, 0xba}}
 
 [PcdsFixedAtBuild.common]
-  gJH7110TokenSpaceGuid.PcdJH7110RegistersAddress|0|UINT32|0x00000001
-  gJH7110TokenSpaceGuid.PcdJH7110PciRegBase|0x2b000000|UINT64|0x00000002
-  gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioAdr|0x0|UINT64|0x00000003
-  gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioLen|0x0|UINT32|0x00000004
-  gJH7110TokenSpaceGuid.PcdJH7110PciCpuMmioAdr|0x0|UINT64|0x00000005
-
-  gJH7110TokenSpaceGuid.PcdJH7110PciConfigRegBase|0x9c0000000|UINT64|0x00000006
-
 #SPI
   gJH7110TokenSpaceGuid.PcdSpiFlashRegBase|0|UINT32|0x10000001
   gJH7110TokenSpaceGuid.PcdSpiFlashAhbBase|0|UINT64|0x10000002
@@ -44,6 +36,15 @@
 
   gJH7110TokenSpaceGuid.PcdSpiMemoryMapped|TRUE|BOOLEAN|0x3000060
   gJH7110TokenSpaceGuid.PcdSpiVariableOffset|0|UINT32|0x3000061
+
+[PcdsFixedAtBuild, PcdsPatchableInModule]
+  gJH7110TokenSpaceGuid.PcdJH7110RegistersAddress|0|UINT32|0x00000001
+  gJH7110TokenSpaceGuid.PcdJH7110PciRegBase|0x2b000000|UINT64|0x00000002
+  gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioAdr|0x0|UINT64|0x00000003
+  gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioLen|0x0|UINT32|0x00000004
+  gJH7110TokenSpaceGuid.PcdJH7110PciCpuMmioAdr|0x0|UINT64|0x00000005
+
+  gJH7110TokenSpaceGuid.PcdJH7110PciConfigRegBase|0x940000000|UINT64|0x00000006
 
 [Protocols]
   gJH7110SpiMasterProtocolGuid = { 0xA33C46E0, 0x4FB6, 0x4AA3, { 0x8E, 0x66, 0x00, 0x06, 0x9F, 0x3A, 0x11, 0x81 }}

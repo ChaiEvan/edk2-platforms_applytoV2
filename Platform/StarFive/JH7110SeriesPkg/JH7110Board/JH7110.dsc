@@ -395,6 +395,7 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingSize|0x00010000
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize|0x00010000
 
+[PcdsPatchableInModule]
   ## Host Bridge Table
   gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdSegmentNumber        |0x0
   gUefiRiscVPlatformJH7110PkgTokenSpaceGuid.PcdSupportedAttributes  |0x0
@@ -408,7 +409,7 @@
   gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioAdr   |0x0
   gJH7110TokenSpaceGuid.PcdJH7110PciBusMmioLen   |0x0
   gJH7110TokenSpaceGuid.PcdJH7110PciCpuMmioAdr   |0x0
-  gJH7110TokenSpaceGuid.PcdJH7110PciConfigRegBase|0x9c0000000
+  gJH7110TokenSpaceGuid.PcdJH7110PciConfigRegBase|0x940000000
 
 ################################################################################
 #
